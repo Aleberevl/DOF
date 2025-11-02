@@ -10,173 +10,84 @@ servers:
   description: SwaggerHub API Auto Mocking
 tags:
 - name: Procesamiento
-  description: Rutas relacionadas con la ejecución de tareas de análisis y resumen automático.
+  description: Rutas relacionadas con la ejecución de tareas de análisis y resumen
+    automático.
 paths:
-  /summaries:
+  /alerts:
     get:
       tags:
       - Procesamiento
-      summary: Obtener lista de resúmenes generados
-      operationId: getSummaries
-      parameters:
-      - name: skip
-        in: query
-        description: Número de registros a omitir para la paginación (offset).
-        required: false
-        schema:
-          minimum: 0
-          type: integer
-          format: int32
-          default: 0
-      - name: limit
-        in: query
-        description: Número máximo de registros a retornar (tamaño de la página).
-        required: false
-        schema:
-          maximum: 100
-          minimum: 1
-          type: integer
-          format: int32
-          default: 25
+      summary: Obtener lista de alertas
+      operationId: getAlerts
       responses:
         "200":
-          description: Lista de resúmenes retornada exitosamente.
+          description: Lista de alertas retornada exitosamente.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Summary"
+                  $ref: "#/components/schemas/Alerts"
         "401":
-          $ref: "#/components/responses/UnauthorizedError"
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
     put:
       tags:
       - Procesamiento
-      summary: Actualizar un resumen existente
-      operationId: updateSummary
+      summary: Actualizar una alerta existente
+      operationId: updateAlert
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/summaries_body"
+              $ref: "#/components/schemas/alerts_body"
         required: true
       responses:
         "200":
-          description: Resumen actualizado exitosamente.
+          description: Alerta actualizada exitosamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Summary"
+                $ref: "#/components/schemas/Alerts"
         "401":
-          $ref: "#/components/responses/UnauthorizedError"
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
         "404":
-          $ref: "#/components/responses/NotFoundError"
+          description: Recurso no encontrado. El ID proporcionado no existe.
     post:
       tags:
       - Procesamiento
-      summary: Crear un nuevo resumen
-      operationId: createSummary
+      summary: Crear una nueva alerta
+      operationId: createAlert
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/summaries_body_1"
+              $ref: "#/components/schemas/alerts_body_1"
         required: true
       responses:
         "201":
-          description: Resumen creado exitosamente.
+          description: Alerta creada exitosamente.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Summary"
+                $ref: "#/components/schemas/Alerts"
         "401":
-          $ref: "#/components/responses/UnauthorizedError"
-  /summaries/{summaryId}:
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
     delete:
       tags:
       - Procesamiento
-      summary: Eliminar un resumen por ID
-      operationId: deleteSummary
-      parameters:
-      - name: summaryId
-        in: path
-        required: true
-        schema:
-          type: integer
+      summary: Eliminar una alerta
+      operationId: deleteAlert
       responses:
         "204":
-          description: Resumen eliminado correctamente.
+          description: Alerta eliminada correctamente.
         "401":
-          $ref: "#/components/responses/UnauthorizedError"
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
         "404":
-          $ref: "#/components/responses/NotFoundError"
-  /users:
-    get:
-      summary: Obtener lista de usuarios
-      operationId: getUsers
-      responses:
-        "200":
-          description: Lista de usuarios retornada exitosamente.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/users"
-    put:
-      summary: Actualizar un usuario existente
-      operationId: updateUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/users_body"
-        required: true
-      responses:
-        "200":
-          description: Usuario actualizado exitosamente.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/users"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
-    post:
-      summary: Crear un nuevo usuario
-      operationId: createUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/users_body_1"
-        required: true
-      responses:
-        "201":
-          description: Usuario creado exitosamente.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/users"
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-    delete:
-      summary: Eliminar un usuario
-      operationId: deleteUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/users_body_2"
-        required: true
-      responses:
-        "204":
-          description: Usuario eliminado correctamente.
-        "401":
-          $ref: "#/components/responses/UnauthorizedError"
-        "404":
-          $ref: "#/components/responses/NotFoundError"
+          description: Recurso no encontrado. El ID proporcionado no existe.
   /publications:
     get:
       tags:
@@ -193,7 +104,8 @@ paths:
                 items:
                   $ref: "#/components/schemas/Publications"
         "401":
-          $ref: "#/components/responses/UnauthorizedError"
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
     put:
       tags:
       - Procesamiento
@@ -203,7 +115,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/publications_body"
+              $ref: "#/components/schemas/Publications"
         required: true
       responses:
         "200":
@@ -213,9 +125,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/Publications"
         "401":
-          $ref: "#/components/responses/UnauthorizedError"
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
         "404":
-          $ref: "#/components/responses/NotFoundError"
+          description: Recurso no encontrado. El ID proporcionado no existe.
     post:
       tags:
       - Procesamiento
@@ -225,7 +138,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/publications_body_1"
+              $ref: "#/components/schemas/Publications"
         required: true
       responses:
         "201":
@@ -235,25 +148,246 @@ paths:
               schema:
                 $ref: "#/components/schemas/Publications"
         "401":
-          $ref: "#/components/responses/UnauthorizedError"
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
     delete:
       tags:
       - Procesamiento
       summary: Eliminar una publicación
       operationId: deletePublication
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/publications_body_2"
-        required: true
       responses:
         "204":
           description: Publicación eliminada correctamente.
         "401":
-          $ref: "#/components/responses/UnauthorizedError"
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
         "404":
-          $ref: "#/components/responses/NotFoundError"
+          description: Recurso no encontrado. El ID proporcionado no existe.
+  /summary:
+    get:
+      tags:
+      - Procesamiento
+      summary: Obtener lista de resúmenes
+      operationId: getSummaries
+      responses:
+        "200":
+          description: Lista de resúmenes retornada exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Summary"
+        "401":
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
+    put:
+      tags:
+      - Procesamiento
+      summary: Actualizar un resumen existente
+      operationId: updateSummary
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Summary"
+        required: true
+      responses:
+        "200":
+          description: Resumen actualizado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Summary"
+        "401":
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
+        "404":
+          description: Recurso no encontrado. El ID proporcionado no existe.
+    post:
+      tags:
+      - Procesamiento
+      summary: Crear un nuevo resumen
+      operationId: createSummary
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Summary"
+        required: true
+      responses:
+        "201":
+          description: Resumen creado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Summary"
+        "401":
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
+    delete:
+      tags:
+      - Procesamiento
+      summary: Eliminar un resumen
+      operationId: deleteSummary
+      responses:
+        "204":
+          description: Resumen eliminado correctamente.
+        "401":
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
+        "404":
+          description: Recurso no encontrado. El ID proporcionado no existe.
+  /tasks:
+    get:
+      tags:
+      - Procesamiento
+      summary: Obtener lista de tareas
+      operationId: getTasks
+      responses:
+        "200":
+          description: Lista de tareas retornada exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tasks"
+        "401":
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
+    put:
+      tags:
+      - Procesamiento
+      summary: Actualizar una tarea existente
+      operationId: updateTask
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Tasks"
+        required: true
+      responses:
+        "200":
+          description: Tarea actualizada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tasks"
+        "401":
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
+        "404":
+          description: Recurso no encontrado. El ID proporcionado no existe.
+    post:
+      tags:
+      - Procesamiento
+      summary: Crear una nueva tarea
+      operationId: createTask
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Tasks"
+        required: true
+      responses:
+        "201":
+          description: Tarea creada exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tasks"
+        "401":
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
+    delete:
+      tags:
+      - Procesamiento
+      summary: Eliminar una tarea
+      operationId: deleteTask
+      responses:
+        "204":
+          description: Tarea eliminada correctamente.
+        "401":
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
+        "404":
+          description: Recurso no encontrado. El ID proporcionado no existe.
+  /users:
+    get:
+      tags:
+      - Procesamiento
+      summary: Obtener lista de usuarios
+      operationId: getUsers
+      responses:
+        "200":
+          description: Lista de usuarios retornada exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/users"
+        "401":
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
+    put:
+      tags:
+      - Procesamiento
+      summary: Actualizar un usuario existente
+      operationId: updateUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/users"
+        required: true
+      responses:
+        "200":
+          description: Usuario actualizado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/users"
+        "401":
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
+        "404":
+          description: Recurso no encontrado. El ID proporcionado no existe.
+    post:
+      tags:
+      - Procesamiento
+      summary: Crear un nuevo usuario
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/users"
+        required: true
+      responses:
+        "201":
+          description: Usuario creado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/users"
+        "401":
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
+    delete:
+      tags:
+      - Procesamiento
+      summary: Eliminar un usuario
+      operationId: deleteUser
+      responses:
+        "204":
+          description: Usuario eliminado correctamente.
+        "401":
+          description: Acceso no autorizado. Falta el token de autenticación o es
+            inválido.
+        "404":
+          description: Recurso no encontrado. El ID proporcionado no existe.
 components:
   schemas:
     Summary:
@@ -280,14 +414,16 @@ components:
         columns:
           type: array
           items:
-            $ref: "#/components/schemas/publications_columns"
+            $ref: "#/components/schemas/alerts_columns"
         title:
           type: string
-      description: Tabla principal para almacenar la información de los usuarios del sistema (administradores y clientes).
+      description: Tabla principal para almacenar la información de los usuarios del
+        sistema (administradores y clientes).
       x-examples:
         Example 1:
           table_name: users
-          description: Tabla principal para almacenar la información de los usuarios del sistema (administradores y clientes).
+          description: Tabla principal para almacenar la información de los usuarios
+            del sistema (administradores y clientes).
           columns:
           - name: id
             type: BIGINT
@@ -300,12 +436,14 @@ components:
             constraints:
             - NOT NULL
             - UNIQUE
-            description: "Correo electrónico del usuario, utilizado para inicio de sesión. Debe ser único."
+            description: "Correo electrónico del usuario, utilizado para inicio de\
+              \ sesión. Debe ser único."
           - name: password_hash
             type: VARCHAR(255)
             constraints:
             - NOT NULL
-            description: Contraseña cifrada (hashed) del usuario. Nunca se almacena en texto plano.
+            description: Contraseña cifrada (hashed) del usuario. Nunca se almacena
+              en texto plano.
           - name: full_name
             type: VARCHAR(255)
             constraints:
@@ -318,7 +456,8 @@ components:
           - name: role
             type: "ENUM('admin', 'reader', 'processor')"
             default: '''reader'''
-            description: "Rol del usuario en el sistema, definiendo sus permisos de acceso."
+            description: "Rol del usuario en el sistema, definiendo sus permisos de\
+              \ acceso."
           - name: created_at
             type: TIMESTAMP
             default: CURRENT_TIMESTAMP
@@ -327,7 +466,6 @@ components:
             type: TIMESTAMP
             default: "NULL"
             description: Fecha y hora del último inicio de sesión.
-          title: Users
     Publications:
       type: object
       properties:
@@ -338,13 +476,15 @@ components:
         columns:
           type: array
           items:
-            $ref: "#/components/schemas/publications_columns"
+            $ref: "#/components/schemas/alerts_columns"
         title:
           type: string
       x-examples:
         Example 1:
           table_name: summaries
-          description: "Tabla para almacenar resúmenes generados automáticamente de objetos del proyecto (publicaciones, secciones, ítems o fragmentos) junto con su modelo, idioma y nivel de confianza."
+          description: "Tabla para almacenar resúmenes generados automáticamente de\
+            \ objetos del proyecto (publicaciones, secciones, ítems o fragmentos)\
+            \ junto con su modelo, idioma y nivel de confianza."
           columns:
           - name: id
             type: BIGINT
@@ -356,22 +496,26 @@ components:
             type: "ENUM('publication', 'section', 'item', 'chunk')"
             constraints:
             - NOT NULL
-            description: "Tipo de objeto al que pertenece el resumen (publicación, sección, ítem o fragmento de texto)."
+            description: "Tipo de objeto al que pertenece el resumen (publicación,\
+              \ sección, ítem o fragmento de texto)."
           - name: object_id
             type: BIGINT
             constraints:
             - NOT NULL
             - FOREIGN KEY (referencia a la tabla de la entidad padre)
-            description: Identificador del objeto original en su tabla correspondiente (clave foránea).
+            description: Identificador del objeto original en su tabla correspondiente
+              (clave foránea).
           - name: model_used
             type: VARCHAR(100)
             constraints:
             - NOT NULL
-            description: Nombre del modelo de lenguaje (LLM) utilizado para generar el resumen (ej. ''Gemini-2.5-Pro'').
+            description: Nombre del modelo de lenguaje (LLM) utilizado para generar
+              el resumen (ej. ''Gemini-2.5-Pro'').
           - name: lang
             type: VARCHAR(10)
             default: '''es'''
-            description: Código ISO del idioma en el que fue generado el resumen (por defecto 'es').
+            description: Código ISO del idioma en el que fue generado el resumen (por
+              defecto 'es').
           - name: summary_text
             type: TEXT
             constraints:
@@ -379,84 +523,124 @@ components:
             description: Contenido textual completo del resumen generado.
           - name: confidence
             type: "DECIMAL(5,2)"
-            description: "Nivel de confianza asociado al resumen, expresado entre 0.00 y 1.00."
+            description: "Nivel de confianza asociado al resumen, expresado entre\
+              \ 0.00 y 1.00."
           - name: created_at
             type: TIMESTAMP
             default: CURRENT_TIMESTAMP
             description: Fecha y hora de generación del resumen.
           title: Summaries
-    summaries_body:
+    Tasks:
+      title: Tasks
       type: object
       properties:
-        id:
-          type: integer
-        summary_text:
+        table_name:
           type: string
-        confidence:
-          type: number
-          format: float
-    summaries_body_1:
+        description:
+          type: string
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/alerts_columns"
+      description: "Tabla para rastrear y auditar el estado de las tareas de procesamiento\
+        \ asíncrono (OCR, resumen, indexación) para cada publicación del DOF."
+      x-examples:
+        Example 1:
+          table_name: tasks
+          description: "Tabla para rastrear y auditar el estado de las tareas de procesamiento\
+            \ asíncrono (OCR, resumen, indexación) para cada publicación del DOF."
+          columns:
+          - name: id
+            type: BIGINT
+            constraints:
+            - PRIMARY KEY
+            - AUTO_INCREMENT
+            description: Identificador único de la tarea.
+          - name: publication_id
+            type: BIGINT
+            constraints:
+            - NOT NULL
+            - FOREIGN KEY (referencia a la tabla publications)
+            description: Identificador de la publicación a la que pertenece esta tarea.
+          - name: task_type
+            type: "ENUM('parse_pdf', 'ocr', 'split', 'nlp', 'summarize', 'index')"
+            constraints:
+            - NOT NULL
+            description: Tipo de procesamiento a ejecutar.
+          - name: status
+            type: "ENUM('queued', 'running', 'done', 'failed', 'canceled')"
+            constraints:
+            - NOT NULL
+            description: Estado actual de la tarea en el flujo de trabajo.
+          - name: started_at
+            type: TIMESTAMP
+            default: "NULL"
+            description: Marca de tiempo cuando la tarea comenzó a ejecutarse.
+          - name: finished_at
+            type: TIMESTAMP
+            default: "NULL"
+            description: Marca de tiempo cuando la tarea terminó (éxito o fallo).
+          - name: retries
+            type: INT
+            default: "0"
+            description: Contador de intentos de ejecución de la tarea.
+          - name: error
+            type: TEXT
+            default: "NULL"
+            description: Mensaje detallado del error si el estado de la tarea es 'failed'.
+    Alerts:
       type: object
       properties:
-        summary_text:
+        table_name:
           type: string
-        confidence:
-          type: number
-          format: float
-    users_body:
-      type: object
-      properties:
-        id:
-          type: integer
-        email:
+        description:
           type: string
-          format: email
-        password_hash:
-          type: string
-        full_name:
-          type: string
-        status:
-          type: string
-          enum:
-          - active
-          - suspended
-          - pending
-        role:
-          type: string
-          enum:
-          - admin
-          - reader
-          - processor
-    users_body_1:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-        password_hash:
-          type: string
-        full_name:
-          type: string
-        status:
-          type: string
-          default: pending
-          enum:
-          - active
-          - suspended
-          - pending
-        role:
-          type: string
-          default: reader
-          enum:
-          - admin
-          - reader
-          - processor
-    users_body_2:
-      type: object
-      properties:
-        id:
-          type: integer
-    publications_columns:
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/alerts_columns"
+      description: "Tabla para almacenar alertas personalizadas de los usuarios, basadas\
+        \ en consultas programadas sobre nuevas publicaciones del DOF."
+      x-examples:
+        Example 1:
+          table_name: alerts
+          description: "Tabla para almacenar alertas personalizadas de los usuarios,\
+            \ basadas en consultas programadas sobre nuevas publicaciones del DOF."
+          columns:
+          - name: id
+            type: BIGINT
+            constraints:
+            - PRIMARY KEY
+            - AUTO_INCREMENT
+            description: Identificador único de la alerta.
+          - name: user_id
+            type: BIGINT
+            constraints:
+            - NOT NULL
+            - FOREIGN KEY (referencia a la tabla users)
+            description: Identificador del usuario que creó esta alerta.
+          - name: query
+            type: TEXT
+            constraints:
+            - NOT NULL
+            description: "La cadena de búsqueda o consulta (palabras clave, filtros)\
+              \ que activa la alerta."
+          - name: schedule_cron
+            type: VARCHAR(50)
+            constraints:
+            - NOT NULL
+            description: Expresión CRON que define la frecuencia de ejecución de la
+              alerta (ej. '0 9 * * 1' para cada lunes a las 9 am).
+          - name: active
+            type: BOOLEAN
+            default: "TRUE"
+            description: Indica si la alerta está activa o ha sido desactivada por
+              el usuario.
+          - name: last_run_at
+            type: TIMESTAMP
+            default: "NULL"
+            description: Marca de tiempo de la última vez que se ejecutó la alerta.
+    alerts_columns:
       type: object
       properties:
         name:
@@ -471,7 +655,7 @@ components:
           type: string
         default:
           type: string
-    publications_body:
+    alerts_body:
       type: object
       properties:
         table_name:
@@ -481,10 +665,10 @@ components:
         columns:
           type: array
           items:
-            $ref: "#/components/schemas/publications_columns"
+            $ref: "#/components/schemas/alerts_columns"
         title:
           type: string
-    publications_body_1:
+    alerts_body_1:
       type: object
       properties:
         table_name:
@@ -494,13 +678,8 @@ components:
         columns:
           type: array
           items:
-            $ref: "#/components/schemas/publications_columns"
+            $ref: "#/components/schemas/alerts_columns"
         title:
-          type: string
-    publications_body_2:
-      type: object
-      properties:
-        table_name:
           type: string
   responses:
     UnauthorizedError:
