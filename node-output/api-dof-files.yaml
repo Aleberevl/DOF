@@ -1,0 +1,132 @@
+openapi: 3.0.3
+info:
+  title: API del Diario Oficial Federado - Archivos DOF
+  description: |
+    Especificación de la API para recuperar archivos del Diario Oficial Federado (DOF) y visualizar el
+    archivo completo, incluyendo sus metadatos (información de la tabla files y datos básicos de
+    publications) y las páginas relacionadas desde la tabla pages, con su texto e imagen por página,
+    para facilitar la consulta detallada de cada documento.
+    incluyendo sus metadatos y páginas relacionadas.
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/itesm-897/api_dof/1.0.0
+  description: SwaggerHub API Auto Mocking
+- url: https://virtserver.swaggerhub.com/tecnologicodemonterr-61b/DOD/1.0.0
+  description: SwaggerHub API Auto Mocking
+tags:
+- name: Archivos DOF
+  description: Rutas para consultar y visualizar archivos oficiales del DOF.
+paths:
+  /dof/files:
+    get:
+      tags:
+      - Archivos DOF
+      summary: Recuperar archivos DOF
+      description: "Obtiene todos los archivos del Diario Oficial Federado, junto\
+        \ con la publicación a la que pertenecen."
+      responses:
+        "200":
+          description: Lista de archivos DOF recuperada exitosamente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/inline_response_200"
+  /dof/files/{file_id}:
+    get:
+      tags:
+      - Archivos DOF
+      summary: Visualizar archivo completo
+      description: "Devuelve el archivo DOF correspondiente al ID indicado, con sus\
+        \ páginas o texto completo si está disponible."
+      parameters:
+      - name: file_id
+        in: path
+        description: ID del archivo DOF
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
+      responses:
+        "200":
+          description: Archivo DOF recuperado exitosamente.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/inline_response_200_1"
+components:
+  schemas:
+    inline_response_200:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        publication_id:
+          type: integer
+          example: 10
+        storage_uri:
+          type: string
+          example: s3://dof-storage/2025-11-06/001.pdf
+        mime:
+          type: string
+          example: application/pdf
+        bytes:
+          type: integer
+          example: 2048000
+        sha256:
+          type: string
+          example: a2b8e8c9d1f34b8d7e42e6c8f77f74a1b2...
+        has_ocr:
+          type: boolean
+          example: true
+        pages_count:
+          type: integer
+          example: 24
+        publication_date:
+          type: string
+          format: date
+          example: 2025-11-06
+        publication_type:
+          type: string
+          example: DOF
+        source_url:
+          type: string
+          example: https://dof.gob.mx/nota_detalle.php?codigo=1234567
+    inline_response_200_1:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        publication_id:
+          type: integer
+          example: 10
+        storage_uri:
+          type: string
+          example: s3://dof-storage/2025-11-06/001.pdf
+        mime:
+          type: string
+          example: application/pdf
+        has_ocr:
+          type: boolean
+          example: true
+        pages:
+          type: array
+          items:
+            type: object
+            properties:
+              page_no:
+                type: integer
+                example: 1
+              text:
+                type: string
+                example: Texto extraído de la primera página...
+              image_uri:
+                type: string
+                example: https://s3.amazonaws.com/dof-storage/2025-11-06/page1.png
+        summary:
+          type: string
+          example: "Resumen del decreto: principales incentivos fiscales para PYMES."
