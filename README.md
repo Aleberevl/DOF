@@ -93,6 +93,103 @@ ON DUPLICATE KEY UPDATE text=VALUES(text);
 
 INSERT INTO summaries (object_type, object_id, model, summary_text, confidence)
 VALUES ('publication',1,'gpt-5','Resumen del decreto: principales incentivos fiscales para PYMES.',0.95);
+
+
+USE dofdb;
+
+-- =========================================================================
+-- PASO 1: INSERTAR LA PUBLICACIÓN PRINCIPAL
+-- =========================================================================
+
+-- La publicación corresponde al Diario Oficial del 4 de noviembre de 2025.
+INSERT INTO publications (id, dof_date, issue_number, type, source_url, sha256, published_at, fetched_at, status)
+VALUES (
+    1001, -- ID arbitrario
+    '2025-11-04',
+    '296/2025', -- De la primera página del PDF
+    'DOF',      -- Diario Oficial de la Federación
+    'https://dof.gob.mx/nota_detalle.php?fecha=2025-11-04', -- URL de ejemplo
+    'e8f7a6b9c2d1e0f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7', -- SHA256 ficticio
+    '2025-11-04 00:00:00',
+    NOW(),
+    'parsed' -- El estado es 'parsed' (analizado) ya que tenemos las páginas.
+)
+ON DUPLICATE KEY UPDATE dof_date=VALUES(dof_date), status=VALUES(status);
+
+
+-- =========================================================================
+-- PASO 2: INSERTAR EL ARCHIVO (PDF) ASOCIADO
+-- =========================================================================
+
+-- El archivo es el PDF que acabamos de revisar.
+INSERT INTO files (id, publication_id, storage_uri, public_url, mime, bytes, sha256, has_ocr, pages_count)
+VALUES (
+    2001, -- ID arbitrario
+    1001,
+    '/workspaces/DOFDB/04112025-MAT.pdf', -- Ruta local simulada
+    'https://dof.gob.mx/pdfs/2025/NOV/04112025-MAT.pdf', -- URL pública de ejemplo
+    'application/pdf',
+    5120000, -- Tamaño de archivo ficticio (5MB)
+    'f3e9d0c1b8a7f6e5d4c3b2a109876543210fedcba9876543210fedcba987654321', -- SHA256 ficticio
+    1,       -- has_ocr = 1 (Sí tiene OCR, ya que el texto fue extraído)
+    340      -- Páginas contadas al final del fragmento del PDF
+)
+ON DUPLICATE KEY UPDATE publication_id=VALUES(publication_id);
+
+
+-- =========================================================================
+-- PASO 3: INSERTAR LAS PÁGINAS EXTRAÍDAS (Información extendida con más de 100 caracteres)
+-- =========================================================================
+
+-- Página 1: Portada y Contenido Principal (Texto extendido)
+INSERT INTO pages (file_id, page_no, text, image_uri)
+VALUES (
+    2001,
+    1,
+    'DIARIO OFICIAL DE LA FEDERACION. ÓRGANO DEL GOBIERNO CONSTITUCIONAL DE LOS ESTADOS UNIDOS MEXICANOS. No. de publicación: 296/2025. Ciudad de México, martes 4 de noviembre de 2025. CONTENIDO: Secretaría de Gobernación, Secretaría de Hacienda y Crédito Público, Secretaría de Bienestar, Secretaría de Medio Ambiente y Recursos Naturales, y otras dependencias cruciales para la administración federal.',
+    NULL
+),
+-- Página 2: Índice de la Secretaría de Gobernación (Texto extendido)
+(
+    2001,
+    2,
+    '2 DIARIO OFICIAL INDICE SECRETARIA DE GOBERNACION. Aviso por el que se da a conocer el extracto de la solicitud de registro constitutivo como asociación religiosa de una entidad interna de Convención Nacional Bautista de México, A.R., denominada Convención Bautista de la Región Carbonífera en Coahuila, iniciando el proceso en la página 5. Este es un documento importante del Poder Ejecutivo Federal.',
+    NULL
+)
+ON DUPLICATE KEY UPDATE text=VALUES(text);
+
+
+-- =========================================================================
+-- PASO 4: SIMULAR UNA TAREA DE PROCESAMIENTO (E.g., Tarea de Resumen)
+-- =========================================================================
+
+-- Se añade una tarea de resumen para la publicación, indicando que está en cola.
+INSERT INTO tasks (publication_id, task_type, status)
+VALUES (
+    1001,
+    'summarize',
+    'queued'
+)
+ON DUPLICATE KEY UPDATE status=VALUES(status);
+
+
+-- =========================================================================
+-- PASO 5: SIMULAR UN RESUMEN GENERADO (Para el índice/publicación completa)
+-- =========================================================================
+
+-- El resumen se genera sobre la publicación completa (objeto tipo 'publication').
+INSERT INTO summaries (object_type, object_id, model, summary_text, confidence)
+VALUES (
+    'publication',
+    1001,
+    'gemini-2.5-flash-preview-09-2025', -- Modelo de resumen de ejemplo
+    'El Diario Oficial del 4 de noviembre de 2025 contiene avisos de la Secretaría de Gobernación sobre registros de asociaciones religiosas y diversos acuerdos de la SHCP, Bienestar y Energía, con un enfoque en normativas y trámites administrativos.',
+    0.8950
+)
+ON DUPLICATE KEY UPDATE summary_text=VALUES(summary_text);
+
+
+
 ```
 
 ### Opción B — Usar un PDF local
