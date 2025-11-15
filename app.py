@@ -503,10 +503,6 @@ def share_summary(summary_id: int):
 
 
 
-# ------------------------------------------------------
-# A. PUBLICACIONES: Listado
-# GET /dof/publications -> Lista de las últimas 10 publicaciones
-# ------------------------------------------------------
 @app.route("/dof/publications", methods=["GET"])
 def get_publications_list():
     conn = get_db_connection()
@@ -523,11 +519,9 @@ def get_publications_list():
             p.source_url,
             p.status,
             f.id AS file_id,
-            f.pages_count,
-            s.summary_text AS publication_summary
+            f.pages_count
         FROM publications p
         LEFT JOIN files f ON p.id = f.publication_id
-        LEFT JOIN summaries s ON s.object_type = 'publication' AND s.object_id = p.id
         ORDER BY p.dof_date DESC
         LIMIT 10
     """
@@ -543,7 +537,7 @@ def get_publications_list():
 
 # ------------------------------------------------------
 # B. PUBLICACIONES: Detalle estructurado
-# GET /dof/publications/{pub_id} -> Publicación con estructura de Secciones, Ítems y Entidades
+# GET /dof/publications/{pub_id} -> Publicación con estructura de Secciones, Ítems, Entidades y Páginas
 # ------------------------------------------------------
 @app.route("/dof/publications/<int:pub_id>", methods=["GET"])
 def get_publication_detail(pub_id):
@@ -558,11 +552,9 @@ def get_publication_detail(pub_id):
         pub_sql = """
             SELECT
                 p.id, p.dof_date, p.issue_number, p.type, p.source_url, p.status, p.published_at,
-                f.id AS file_id, f.storage_uri, f.public_url, f.pages_count, f.mime, f.has_ocr,
-                s_pub.summary_text AS publication_summary
+                f.id AS file_id, f.storage_uri, f.public_url, f.pages_count, f.mime, f.has_ocr
             FROM publications p
             LEFT JOIN files f ON p.id = f.publication_id
-            LEFT JOIN summaries s_pub ON s_pub.object_type = 'publication' AND s_pub.object_id = p.id
             WHERE p.id = %s
         """
         cursor.execute(pub_sql, (pub_id,))
@@ -571,6 +563,8 @@ def get_publication_detail(pub_id):
         if not pub_row:
             return jsonify({"message": f"Publicación {pub_id} no encontrada"}), 404
 
+        file_id = pub_row['file_id']
+        
         # 2. Recuperar Secciones e Ítems con su resumen (si existe)
         sections_items_sql = """
             SELECT
@@ -597,11 +591,26 @@ def get_publication_detail(pub_id):
             JOIN items i ON ie.item_id = i.id
             JOIN sections s ON i.section_id = s.id
             WHERE s.publication_id = %s
+            ORDER BY ie.item_id
         """
         cursor.execute(entities_sql, (pub_id,))
         entity_rows = cursor.fetchall()
         
-        # 4. Estructurar la jerarquía (Publicación -> Secciones -> Ítems -> Entidades)
+        # 4. Recuperar todas las Páginas asociadas al Archivo de esta Publicación
+        pages = []
+        if file_id is not None:
+            cursor.execute(
+                """
+                SELECT page_no, text, image_uri
+                FROM pages
+                WHERE file_id = %s
+                ORDER BY page_no
+                """,
+                (file_id,),
+            )
+            pages = cursor.fetchall()
+        
+        # 5. Estructurar la jerarquía (Publicación -> Secciones -> Ítems -> Entidades)
         
         sections = {}
         item_map = {} # Mapa para insertar entidades eficientemente
@@ -647,7 +656,7 @@ def get_publication_detail(pub_id):
                     'evidence': entity_row['evidence_span']
                 })
 
-        # 5. Construir el resultado final
+        # 6. Construir el resultado final
         result = {
             'publication': {
                 'id': pub_row['id'],
@@ -656,7 +665,6 @@ def get_publication_detail(pub_id):
                 'type': pub_row['type'],
                 'status': pub_row['status'],
                 'source_url': pub_row['source_url'],
-                'summary': pub_row['publication_summary'],
             },
             'file': {
                 'id': pub_row['file_id'],
@@ -666,7 +674,8 @@ def get_publication_detail(pub_id):
                 'storage_uri': pub_row['storage_uri'],
                 'public_url': pub_row['public_url'],
             },
-            'sections': list(sections.values())
+            'sections': list(sections.values()),
+            'pages': pages,  # <- La lista de páginas se adjunta a la respuesta de la publicación
         }
 
         return jsonify(result), 200
@@ -676,6 +685,8 @@ def get_publication_detail(pub_id):
     finally:
         cursor.close()
         conn.close()
+
+
 
 
 # ----------------------------------------------------------------------
