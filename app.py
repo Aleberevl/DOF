@@ -503,6 +503,179 @@ def share_summary(summary_id: int):
 
 
 
+# ------------------------------------------------------
+# A. PUBLICACIONES: Listado
+# GET /dof/publications -> Lista de las últimas 10 publicaciones
+# ------------------------------------------------------
+@app.route("/dof/publications", methods=["GET"])
+def get_publications_list():
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"message": "Error de conexión a la base de datos"}), 500
+
+    cursor = conn.cursor(dictionary=True)
+    sql = """
+        SELECT
+            p.id,
+            p.dof_date,
+            p.issue_number,
+            p.type,
+            p.source_url,
+            p.status,
+            f.id AS file_id,
+            f.pages_count,
+            s.summary_text AS publication_summary
+        FROM publications p
+        LEFT JOIN files f ON p.id = f.publication_id
+        LEFT JOIN summaries s ON s.object_type = 'publication' AND s.object_id = p.id
+        ORDER BY p.dof_date DESC
+        LIMIT 10
+    """
+    try:
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        return jsonify(rows), 200
+    except mysql.connector.Error as err:
+        return jsonify({"message": f"Error al recuperar publicaciones: {err}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# ------------------------------------------------------
+# B. PUBLICACIONES: Detalle estructurado
+# GET /dof/publications/{pub_id} -> Publicación con estructura de Secciones, Ítems y Entidades
+# ------------------------------------------------------
+@app.route("/dof/publications/<int:pub_id>", methods=["GET"])
+def get_publication_detail(pub_id):
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({"message": "Error de conexión a la base de datos"}), 500
+
+    cursor = conn.cursor(dictionary=True)
+    
+    try:
+        # 1. Recuperar datos principales de la Publicación y Archivo
+        pub_sql = """
+            SELECT
+                p.id, p.dof_date, p.issue_number, p.type, p.source_url, p.status, p.published_at,
+                f.id AS file_id, f.storage_uri, f.public_url, f.pages_count, f.mime, f.has_ocr,
+                s_pub.summary_text AS publication_summary
+            FROM publications p
+            LEFT JOIN files f ON p.id = f.publication_id
+            LEFT JOIN summaries s_pub ON s_pub.object_type = 'publication' AND s_pub.object_id = p.id
+            WHERE p.id = %s
+        """
+        cursor.execute(pub_sql, (pub_id,))
+        pub_row = cursor.fetchone()
+
+        if not pub_row:
+            return jsonify({"message": f"Publicación {pub_id} no encontrada"}), 404
+
+        # 2. Recuperar Secciones e Ítems con su resumen (si existe)
+        sections_items_sql = """
+            SELECT
+                s.id AS section_id, s.name AS section_name, s.seq, s.page_start AS sec_page_start, s.page_end AS sec_page_end,
+                i.id AS item_id, i.item_type, i.title AS item_title, i.issuing_entity, i.page_from AS item_page_from, i.page_to AS item_page_to, i.raw_text,
+                s_item.summary_text AS item_summary
+            FROM sections s
+            LEFT JOIN items i ON s.id = i.section_id
+            LEFT JOIN summaries s_item ON s_item.object_type = 'item' AND s_item.object_id = i.id
+            WHERE s.publication_id = %s
+            ORDER BY s.seq, i.page_from
+        """
+        cursor.execute(sections_items_sql, (pub_id,))
+        section_item_rows = cursor.fetchall()
+
+        # 3. Recuperar todas las Entidades asociadas a los Ítems de esta Publicación
+        entities_sql = """
+            SELECT
+                ie.item_id,
+                e.id AS entity_id, e.name AS entity_name, e.type AS entity_type, e.norm_name,
+                ie.evidence_span
+            FROM item_entities ie
+            JOIN entities e ON ie.entity_id = e.id
+            JOIN items i ON ie.item_id = i.id
+            JOIN sections s ON i.section_id = s.id
+            WHERE s.publication_id = %s
+        """
+        cursor.execute(entities_sql, (pub_id,))
+        entity_rows = cursor.fetchall()
+        
+        # 4. Estructurar la jerarquía (Publicación -> Secciones -> Ítems -> Entidades)
+        
+        sections = {}
+        item_map = {} # Mapa para insertar entidades eficientemente
+
+        for row in section_item_rows:
+            sec_id = row['section_id']
+            item_id = row['item_id']
+
+            # Crear sección si no existe
+            if sec_id not in sections:
+                sections[sec_id] = {
+                    'id': sec_id,
+                    'name': row['section_name'],
+                    'sequence': row['seq'],
+                    'page_range': (row['sec_page_start'], row['sec_page_end']),
+                    'items': []
+                }
+            
+            # Insertar ítem si existe
+            if item_id:
+                item_data = {
+                    'id': item_id,
+                    'type': row['item_type'],
+                    'title': row['item_title'],
+                    'issuing_entity': row['issuing_entity'],
+                    'page_range': (row['item_page_from'], row['item_page_to']),
+                    'raw_text': row['raw_text'],
+                    'summary': row['item_summary'],
+                    'entities': []
+                }
+                sections[sec_id]['items'].append(item_data)
+                item_map[item_id] = item_data # Guardar referencia al ítem
+        
+        # Asignar entidades a los ítems usando el mapa
+        for entity_row in entity_rows:
+            item_id = entity_row['item_id']
+            if item_id in item_map:
+                item_map[item_id]['entities'].append({
+                    'id': entity_row['entity_id'],
+                    'name': entity_row['entity_name'],
+                    'type': entity_row['entity_type'],
+                    'normalized_name': entity_row['norm_name'],
+                    'evidence': entity_row['evidence_span']
+                })
+
+        # 5. Construir el resultado final
+        result = {
+            'publication': {
+                'id': pub_row['id'],
+                'date': pub_row['dof_date'].isoformat() if pub_row['dof_date'] else None,
+                'issue_number': pub_row['issue_number'],
+                'type': pub_row['type'],
+                'status': pub_row['status'],
+                'source_url': pub_row['source_url'],
+                'summary': pub_row['publication_summary'],
+            },
+            'file': {
+                'id': pub_row['file_id'],
+                'mime': pub_row['mime'],
+                'pages_count': pub_row['pages_count'],
+                'has_ocr': bool(pub_row['has_ocr']),
+                'storage_uri': pub_row['storage_uri'],
+                'public_url': pub_row['public_url'],
+            },
+            'sections': list(sections.values())
+        }
+
+        return jsonify(result), 200
+
+    except mysql.connector.Error as err:
+        return jsonify({"message": f"Error al recuperar detalle de publicación: {err}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 
 # ----------------------------------------------------------------------
