@@ -77,7 +77,7 @@ def get_files():
         conn.close()
 
 # ----------------------------------------------------------------------
-# 3) GET /dof/files/{file_id} -> detalle de archivo + páginas + resumen
+# 2) GET /dof/files/{file_id} -> detalle de archivo + páginas + resumen
 # ----------------------------------------------------------------------
 @app.route("/dof/files/<int:file_id>", methods=["GET"])
 def get_file_detail(file_id):
