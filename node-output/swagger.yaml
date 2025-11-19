@@ -1,688 +1,671 @@
 openapi: 3.0.3
 info:
-  title: Rutas de Resúmenes (Fragmento DOF)
+  title: API del Diario Oficial Federado - Archivos DOF
   description: |
-    Este archivo es un fragmento de la especificación principal del DOF, enfocado
-    exclusivamente en las rutas para la gestión de resúmenes generados automáticamente.
+    Especificación de la API para recuperar archivos del Diario Oficial Federado (DOF) y visualizar el
+    archivo completo, incluyendo sus metadatos (información de la tabla files y datos básicos de
+    publications) y las páginas relacionadas desde la tabla pages, con su texto e imagen por página,
+    para facilitar la consulta detallada de cada documento.
+    incluyendo sus metadatos y páginas relacionadas.
   version: 1.0.0
 servers:
+- url: https://virtserver.swaggerhub.com/itesm-897/api_dof/1.0.0
+  description: SwaggerHub API Auto Mocking
 - url: https://virtserver.swaggerhub.com/tecnologicodemonterr-61b/DOD/1.0.0
   description: SwaggerHub API Auto Mocking
 tags:
-- name: Procesamiento
-  description: Rutas relacionadas con la ejecución de tareas de análisis y resumen
-    automático.
+- name: Archivos DOF
+  description: Rutas para consultar y visualizar archivos oficiales del DOF.
 paths:
-  /alerts:
+  /dof/files:
     get:
       tags:
-      - Procesamiento
-      summary: Obtener lista de alertas
-      operationId: getAlerts
+      - Archivos DOF
+      summary: Recuperar archivos DOF
+      description: "Obtiene todos los archivos del Diario Oficial Federado, junto con la publicación a la que pertenecen."
       responses:
         "200":
-          description: Lista de alertas retornada exitosamente.
+          description: Lista de archivos DOF recuperada exitosamente.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Alerts"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-    put:
-      tags:
-      - Procesamiento
-      summary: Actualizar una alerta existente
-      operationId: updateAlert
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/alerts_body"
-        required: true
-      responses:
-        "200":
-          description: Alerta actualizada exitosamente.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Alerts"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-        "404":
-          description: Recurso no encontrado. El ID proporcionado no existe.
-    post:
-      tags:
-      - Procesamiento
-      summary: Crear una nueva alerta
-      operationId: createAlert
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/alerts_body_1"
-        required: true
-      responses:
+                  $ref: "#/components/schemas/inline_response_200"
         "201":
-          description: Alerta creada exitosamente.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Alerts"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-    delete:
-      tags:
-      - Procesamiento
-      summary: Eliminar una alerta
-      operationId: deleteAlert
-      responses:
-        "204":
-          description: Alerta eliminada correctamente.
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
+          description: Created
+        "400":
+          description: Bad Request
         "404":
-          description: Recurso no encontrado. El ID proporcionado no existe.
-  /publications:
+          description: Not Found
+  /dof/files/{file_id}:
     get:
       tags:
-      - Procesamiento
-      summary: Obtener lista de publicaciones
-      operationId: getPublications
+      - Archivos DOF
+      summary: Visualizar archivo completo
+      description: "Devuelve el archivo DOF correspondiente al ID indicado, con sus páginas o texto completo si está disponible."
+      parameters:
+      - name: file_id
+        in: path
+        description: ID del archivo DOF
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: integer
       responses:
         "200":
-          description: Lista de publicaciones retornada exitosamente.
+          description: Archivo DOF recuperado exitosamente.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Publications"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-    put:
-      tags:
-      - Procesamiento
-      summary: Actualizar una publicación existente
-      operationId: updatePublication
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Publications"
-        required: true
-      responses:
-        "200":
-          description: Publicación actualizada exitosamente.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Publications"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
+                $ref: "#/components/schemas/inline_response_200_1"
+        "400":
+          description: Bad Request
         "404":
-          description: Recurso no encontrado. El ID proporcionado no existe.
-    post:
-      tags:
-      - Procesamiento
-      summary: Crear una nueva publicación
-      operationId: createPublication
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Publications"
-        required: true
-      responses:
-        "201":
-          description: Publicación creada exitosamente.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Publications"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-    delete:
-      tags:
-      - Procesamiento
-      summary: Eliminar una publicación
-      operationId: deletePublication
-      responses:
-        "204":
-          description: Publicación eliminada correctamente.
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-        "404":
-          description: Recurso no encontrado. El ID proporcionado no existe.
-  /summary:
+          description: Not Found
+  /dof/publications:
     get:
-      tags:
-      - Procesamiento
-      summary: Obtener lista de resúmenes
-      operationId: getSummaries
-      responses:
-        "200":
-          description: Lista de resúmenes retornada exitosamente.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Summary"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-    put:
-      tags:
-      - Procesamiento
-      summary: Actualizar un resumen existente
-      operationId: updateSummary
+      tags: []
+      summary: Recuperar publicaciones
+      operationId: get-dof-publications
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Summary"
-        required: true
+              $ref: "#/components/schemas/dof_publications_body"
       responses:
         "200":
-          description: Resumen actualizado exitosamente.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Summary"
+          description: OK
+        "400":
+          description: Bad Request
         "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-        "404":
-          description: Recurso no encontrado. El ID proporcionado no existe.
-    post:
-      tags:
-      - Procesamiento
-      summary: Crear un nuevo resumen
-      operationId: createSummary
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Summary"
-        required: true
-      responses:
-        "201":
-          description: Resumen creado exitosamente.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Summary"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-    delete:
-      tags:
-      - Procesamiento
-      summary: Eliminar un resumen
-      operationId: deleteSummary
-      responses:
-        "204":
-          description: Resumen eliminado correctamente.
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-        "404":
-          description: Recurso no encontrado. El ID proporcionado no existe.
-  /tasks:
-    get:
-      tags:
-      - Procesamiento
-      summary: Obtener lista de tareas
-      operationId: getTasks
-      responses:
-        "200":
-          description: Lista de tareas retornada exitosamente.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Tasks"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-    put:
-      tags:
-      - Procesamiento
-      summary: Actualizar una tarea existente
-      operationId: updateTask
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Tasks"
-        required: true
-      responses:
-        "200":
-          description: Tarea actualizada exitosamente.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Tasks"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-        "404":
-          description: Recurso no encontrado. El ID proporcionado no existe.
-    post:
-      tags:
-      - Procesamiento
-      summary: Crear una nueva tarea
-      operationId: createTask
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Tasks"
-        required: true
-      responses:
-        "201":
-          description: Tarea creada exitosamente.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Tasks"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-    delete:
-      tags:
-      - Procesamiento
-      summary: Eliminar una tarea
-      operationId: deleteTask
-      responses:
-        "204":
-          description: Tarea eliminada correctamente.
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-        "404":
-          description: Recurso no encontrado. El ID proporcionado no existe.
-  /users:
-    get:
-      tags:
-      - Procesamiento
-      summary: Obtener lista de usuarios
-      operationId: getUsers
-      responses:
-        "200":
-          description: Lista de usuarios retornada exitosamente.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/users"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-    put:
-      tags:
-      - Procesamiento
-      summary: Actualizar un usuario existente
-      operationId: updateUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/users"
-        required: true
-      responses:
-        "200":
-          description: Usuario actualizado exitosamente.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/users"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-        "404":
-          description: Recurso no encontrado. El ID proporcionado no existe.
-    post:
-      tags:
-      - Procesamiento
-      summary: Crear un nuevo usuario
-      operationId: createUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/users"
-        required: true
-      responses:
-        "201":
-          description: Usuario creado exitosamente.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/users"
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-    delete:
-      tags:
-      - Procesamiento
-      summary: Eliminar un usuario
-      operationId: deleteUser
-      responses:
-        "204":
-          description: Usuario eliminado correctamente.
-        "401":
-          description: Acceso no autorizado. Falta el token de autenticación o es
-            inválido.
-        "404":
-          description: Recurso no encontrado. El ID proporcionado no existe.
+          description: Unauthorized
 components:
   schemas:
-    Summary:
+    inline_response_200:
+      required:
+      - id
+      - publication_date
+      - publication_id
+      - publication_type
+      - source_url
+      - storage_uri
       type: object
       properties:
         id:
           type: integer
-          description: Identificador único del resumen.
-        summary_text:
+          example: 1
+        publication_id:
+          type: integer
+          example: 10
+        storage_uri:
           type: string
-          description: El texto del resumen generado.
-        confidence:
-          type: number
-          description: Puntuación de confianza del modelo.
-          format: float
-    users:
-      title: users
+          example: s3://dof-storage/2025-11-06/001.pdf
+        mime:
+          type: string
+          example: application/pdf
+        bytes:
+          type: integer
+          example: 2048000
+        sha256:
+          type: string
+          example: a2b8e8c9d1f34b8d7e42e6c8f77f74a1b2...
+        has_ocr:
+          type: boolean
+          example: true
+        pages_count:
+          type: integer
+          example: 24
+        publication_date:
+          type: string
+          format: date
+          example: 2025-11-06
+        publication_type:
+          type: string
+          example: DOF
+        source_url:
+          type: string
+          example: https://dof.gob.mx/nota_detalle.php?codigo=1234567
+    inline_response_200_1:
+      required:
+      - id
+      - pages
+      - publication_id
+      - storage_uri
+      - summary
       type: object
       properties:
-        table_name:
+        id:
+          type: integer
+          example: 1
+        publication_id:
+          type: integer
+          example: 10
+        storage_uri:
           type: string
-        description:
+          example: s3://dof-storage/2025-11-06/001.pdf
+        mime:
           type: string
-        columns:
+          example: application/pdf
+        has_ocr:
+          type: boolean
+          example: true
+        pages:
           type: array
           items:
-            $ref: "#/components/schemas/alerts_columns"
-        title:
+            $ref: "#/components/schemas/inline_response_200_1_pages"
+        summary:
           type: string
-      description: Tabla principal para almacenar la información de los usuarios del
-        sistema (administradores y clientes).
-      x-examples:
-        Example 1:
-          table_name: users
-          description: Tabla principal para almacenar la información de los usuarios
-            del sistema (administradores y clientes).
-          columns:
-          - name: id
-            type: BIGINT
-            constraints:
-            - PRIMARY KEY
-            - AUTO_INCREMENT
-            description: Identificador único del usuario (clave primaria).
-          - name: email
-            type: VARCHAR(255)
-            constraints:
-            - NOT NULL
-            - UNIQUE
-            description: "Correo electrónico del usuario, utilizado para inicio de\
-              \ sesión. Debe ser único."
-          - name: password_hash
-            type: VARCHAR(255)
-            constraints:
-            - NOT NULL
-            description: Contraseña cifrada (hashed) del usuario. Nunca se almacena
-              en texto plano.
-          - name: full_name
-            type: VARCHAR(255)
-            constraints:
-            - NOT NULL
-            description: Nombre completo del usuario.
-          - name: status
-            type: "ENUM('active', 'suspended', 'pending')"
-            default: '''pending'''
-            description: Estado de la cuenta del usuario.
-          - name: role
-            type: "ENUM('admin', 'reader', 'processor')"
-            default: '''reader'''
-            description: "Rol del usuario en el sistema, definiendo sus permisos de\
-              \ acceso."
-          - name: created_at
-            type: TIMESTAMP
-            default: CURRENT_TIMESTAMP
-            description: Fecha y hora de registro del usuario.
-          - name: last_login_at
-            type: TIMESTAMP
-            default: "NULL"
-            description: Fecha y hora del último inicio de sesión.
+          example: "Resumen del decreto: principales incentivos fiscales para PYMES."
     Publications:
+      required:
+      - Entity
       type: object
       properties:
-        table_name:
-          type: string
-        description:
-          type: string
-        columns:
-          type: array
-          items:
-            $ref: "#/components/schemas/alerts_columns"
-        title:
-          type: string
+        Entity:
+          $ref: "#/components/schemas/Publications_Entity"
+        Item:
+          $ref: "#/components/schemas/Publications_Item"
+        Section:
+          $ref: "#/components/schemas/dofpublications_Section"
+        PublicationPage:
+          $ref: "#/components/schemas/dofpublications_PublicationPage"
       x-examples:
         Example 1:
-          table_name: summaries
-          description: "Tabla para almacenar resúmenes generados automáticamente de\
-            \ objetos del proyecto (publicaciones, secciones, ítems o fragmentos)\
-            \ junto con su modelo, idioma y nivel de confianza."
-          columns:
-          - name: id
-            type: BIGINT
-            constraints:
-            - PRIMARY KEY
-            - AUTO_INCREMENT
-            description: Identificador único del resumen (clave primaria).
-          - name: object_type
-            type: "ENUM('publication', 'section', 'item', 'chunk')"
-            constraints:
-            - NOT NULL
-            description: "Tipo de objeto al que pertenece el resumen (publicación,\
-              \ sección, ítem o fragmento de texto)."
-          - name: object_id
-            type: BIGINT
-            constraints:
-            - NOT NULL
-            - FOREIGN KEY (referencia a la tabla de la entidad padre)
-            description: Identificador del objeto original en su tabla correspondiente
-              (clave foránea).
-          - name: model_used
-            type: VARCHAR(100)
-            constraints:
-            - NOT NULL
-            description: Nombre del modelo de lenguaje (LLM) utilizado para generar
-              el resumen (ej. ''Gemini-2.5-Pro'').
-          - name: lang
-            type: VARCHAR(10)
-            default: '''es'''
-            description: Código ISO del idioma en el que fue generado el resumen (por
-              defecto 'es').
-          - name: summary_text
-            type: TEXT
-            constraints:
-            - NOT NULL
-            description: Contenido textual completo del resumen generado.
-          - name: confidence
-            type: "DECIMAL(5,2)"
-            description: "Nivel de confianza asociado al resumen, expresado entre\
-              \ 0.00 y 1.00."
-          - name: created_at
-            type: TIMESTAMP
-            default: CURRENT_TIMESTAMP
-            description: Fecha y hora de generación del resumen.
-          title: Summaries
-    Tasks:
-      title: Tasks
+          Entity:
+            type: object
+            description: "Entidad nombrada (persona, organización, ley, etc.) detectada dentro de un Ítem."
+            required:
+            - id
+            - name
+            - type
+            - normalized_name
+            properties:
+              id:
+                type: integer
+                description: ID de la entidad.
+              name:
+                type: string
+                description: Nombre de la entidad tal como aparece originalmente.
+              type:
+                type: string
+                description: "Tipo de entidad (e.g., 'PERSONA', 'LEY', 'INSTITUCION')."
+              normalized_name:
+                type: string
+                description: Nombre estandarizado para la entidad.
+              evidence:
+                type: string
+                nullable: true
+                description: Fragmento de texto donde se encontró la entidad.
+          Item:
+            type: object
+            description: Un artículo o acuerdo específico dentro de una Sección.
+            required:
+            - id
+            - type
+            - title
+            - page_range
+            properties:
+              id:
+                type: integer
+                description: ID del ítem.
+              type:
+                type: string
+                description: Tipo de contenido del ítem.
+              title:
+                type: string
+                description: "Título del ítem (e.g., 'Acuerdo', 'Decreto')."
+              issuing_entity:
+                type: string
+                nullable: true
+                description: Entidad que emite el ítem.
+              page_range:
+                type: array
+                description: "[Página inicial, Página final] del ítem."
+                items:
+                  type: integer
+                minItems: 2
+                maxItems: 2
+              raw_text:
+                type: string
+                nullable: true
+                description: Texto sin procesar del ítem.
+              summary:
+                type: string
+                nullable: true
+                description: Resumen del ítem generado (LLM).
+              entities:
+                type: array
+                description: Lista de entidades nombradas extraídas.
+                items:
+                  $ref: "#/components/schemas/Entity"
+          Section:
+            type: object
+            description: "Una sección organizativa dentro de la publicación (e.g., 'SECRETARÍA DE HACIENDA Y CRÉDITO PÚBLICO')."
+            required:
+            - id
+            - name
+            - sequence
+            - page_range
+            - items
+            properties:
+              id:
+                type: integer
+                description: ID de la sección.
+              name:
+                type: string
+                description: Nombre oficial de la sección.
+              sequence:
+                type: integer
+                description: Orden secuencial de la sección.
+              page_range:
+                type: array
+                description: "[Página inicial, Página final] de la sección."
+                items:
+                  type: integer
+                minItems: 2
+                maxItems: 2
+              items:
+                type: array
+                description: Artículos o acuerdos contenidos en la sección.
+                items:
+                  $ref: "#/components/schemas/Item"
+          PublicationPage:
+            type: object
+            description: Detalle del contenido y la imagen de una página específica del archivo.
+            required:
+            - page_no
+            properties:
+              page_no:
+                type: integer
+                description: Número de página.
+              text:
+                type: string
+                nullable: true
+                description: Contenido de texto (OCR) de la página.
+              image_uri:
+                type: string
+                nullable: true
+                description: URI de la imagen renderizada de la página.
+    dofpublications_Entity_properties_id:
       type: object
       properties:
-        table_name:
-          type: string
-        description:
-          type: string
-        columns:
-          type: array
-          items:
-            $ref: "#/components/schemas/alerts_columns"
-      description: "Tabla para rastrear y auditar el estado de las tareas de procesamiento\
-        \ asíncrono (OCR, resumen, indexación) para cada publicación del DOF."
-      x-examples:
-        Example 1:
-          table_name: tasks
-          description: "Tabla para rastrear y auditar el estado de las tareas de procesamiento\
-            \ asíncrono (OCR, resumen, indexación) para cada publicación del DOF."
-          columns:
-          - name: id
-            type: BIGINT
-            constraints:
-            - PRIMARY KEY
-            - AUTO_INCREMENT
-            description: Identificador único de la tarea.
-          - name: publication_id
-            type: BIGINT
-            constraints:
-            - NOT NULL
-            - FOREIGN KEY (referencia a la tabla publications)
-            description: Identificador de la publicación a la que pertenece esta tarea.
-          - name: task_type
-            type: "ENUM('parse_pdf', 'ocr', 'split', 'nlp', 'summarize', 'index')"
-            constraints:
-            - NOT NULL
-            description: Tipo de procesamiento a ejecutar.
-          - name: status
-            type: "ENUM('queued', 'running', 'done', 'failed', 'canceled')"
-            constraints:
-            - NOT NULL
-            description: Estado actual de la tarea en el flujo de trabajo.
-          - name: started_at
-            type: TIMESTAMP
-            default: "NULL"
-            description: Marca de tiempo cuando la tarea comenzó a ejecutarse.
-          - name: finished_at
-            type: TIMESTAMP
-            default: "NULL"
-            description: Marca de tiempo cuando la tarea terminó (éxito o fallo).
-          - name: retries
-            type: INT
-            default: "0"
-            description: Contador de intentos de ejecución de la tarea.
-          - name: error
-            type: TEXT
-            default: "NULL"
-            description: Mensaje detallado del error si el estado de la tarea es 'failed'.
-    Alerts:
-      type: object
-      properties:
-        table_name:
-          type: string
-        description:
-          type: string
-        columns:
-          type: array
-          items:
-            $ref: "#/components/schemas/alerts_columns"
-      description: "Tabla para almacenar alertas personalizadas de los usuarios, basadas\
-        \ en consultas programadas sobre nuevas publicaciones del DOF."
-      x-examples:
-        Example 1:
-          table_name: alerts
-          description: "Tabla para almacenar alertas personalizadas de los usuarios,\
-            \ basadas en consultas programadas sobre nuevas publicaciones del DOF."
-          columns:
-          - name: id
-            type: BIGINT
-            constraints:
-            - PRIMARY KEY
-            - AUTO_INCREMENT
-            description: Identificador único de la alerta.
-          - name: user_id
-            type: BIGINT
-            constraints:
-            - NOT NULL
-            - FOREIGN KEY (referencia a la tabla users)
-            description: Identificador del usuario que creó esta alerta.
-          - name: query
-            type: TEXT
-            constraints:
-            - NOT NULL
-            description: "La cadena de búsqueda o consulta (palabras clave, filtros)\
-              \ que activa la alerta."
-          - name: schedule_cron
-            type: VARCHAR(50)
-            constraints:
-            - NOT NULL
-            description: Expresión CRON que define la frecuencia de ejecución de la
-              alerta (ej. '0 9 * * 1' para cada lunes a las 9 am).
-          - name: active
-            type: BOOLEAN
-            default: "TRUE"
-            description: Indica si la alerta está activa o ha sido desactivada por
-              el usuario.
-          - name: last_run_at
-            type: TIMESTAMP
-            default: "NULL"
-            description: Marca de tiempo de la última vez que se ejecutó la alerta.
-    alerts_columns:
-      type: object
-      properties:
-        name:
-          type: string
         type:
           type: string
-        constraints:
+        description:
+          type: string
+    dofpublications_Entity_properties_evidence:
+      type: object
+      properties:
+        type:
+          type: string
+        nullable:
+          type: boolean
+        description:
+          type: string
+    dofpublications_Entity_properties:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        name:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        type:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        normalized_name:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        evidence:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_evidence"
+    dofpublications_Entity:
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        required:
           type: array
           items:
             type: string
-        description:
-          type: string
-        default:
-          type: string
-    alerts_body:
+        properties:
+          $ref: "#/components/schemas/dofpublications_Entity_properties"
+    dofpublications_Item_properties_page_range_items:
       type: object
       properties:
-        table_name:
+        type:
           type: string
-        description:
-          type: string
-        columns:
-          type: array
-          items:
-            $ref: "#/components/schemas/alerts_columns"
-        title:
-          type: string
-    alerts_body_1:
+    dofpublications_Item_properties_page_range:
       type: object
       properties:
-        table_name:
+        type:
           type: string
         description:
           type: string
-        columns:
+        items:
+          $ref: "#/components/schemas/dofpublications_Item_properties_page_range_items"
+        minItems:
+          type: integer
+        maxItems:
+          type: integer
+    dofpublications_Item_properties_entities_items:
+      type: object
+      properties:
+        $ref:
+          type: string
+    dofpublications_Item_properties_entities:
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        items:
+          $ref: "#/components/schemas/dofpublications_Item_properties_entities_items"
+    dofpublications_Item_properties:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        type:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        title:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        issuing_entity:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_evidence"
+        page_range:
+          $ref: "#/components/schemas/dofpublications_Item_properties_page_range"
+        raw_text:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_evidence"
+        summary:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_evidence"
+        entities:
+          $ref: "#/components/schemas/dofpublications_Item_properties_entities"
+    dofpublications_Item:
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        required:
           type: array
           items:
-            $ref: "#/components/schemas/alerts_columns"
-        title:
+            type: string
+        properties:
+          $ref: "#/components/schemas/dofpublications_Item_properties"
+    dofpublications_Section_properties:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        name:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        sequence:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        page_range:
+          $ref: "#/components/schemas/dofpublications_Item_properties_page_range"
+        items:
+          $ref: "#/components/schemas/dofpublications_Item_properties_entities"
+    dofpublications_Section:
+      type: object
+      properties:
+        type:
           type: string
-  responses:
-    UnauthorizedError:
-      description: Acceso no autorizado. Falta el token de autenticación o es inválido.
-    NotFoundError:
-      description: Recurso no encontrado. El ID proporcionado no existe.
+        description:
+          type: string
+        required:
+          type: array
+          items:
+            type: string
+        properties:
+          $ref: "#/components/schemas/dofpublications_Section_properties"
+    dofpublications_PublicationPage_properties:
+      type: object
+      properties:
+        page_no:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        text:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_evidence"
+        image_uri:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_evidence"
+    dofpublications_PublicationPage:
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        required:
+          type: array
+          items:
+            type: string
+        properties:
+          $ref: "#/components/schemas/dofpublications_PublicationPage_properties"
+    dof_publications_body:
+      type: object
+      properties:
+        Entity:
+          $ref: "#/components/schemas/dofpublications_Entity"
+        Item:
+          $ref: "#/components/schemas/dofpublications_Item"
+        Section:
+          $ref: "#/components/schemas/dofpublications_Section"
+        PublicationPage:
+          $ref: "#/components/schemas/dofpublications_PublicationPage"
+      x-examples:
+        Example 1:
+          Entity:
+            type: object
+            description: "Entidad nombrada (persona, organización, ley, etc.) detectada dentro de un Ítem."
+            required:
+            - id
+            - name
+            - type
+            - normalized_name
+            properties:
+              id:
+                type: integer
+                description: ID de la entidad.
+              name:
+                type: string
+                description: Nombre de la entidad tal como aparece originalmente.
+              type:
+                type: string
+                description: "Tipo de entidad (e.g., 'PERSONA', 'LEY', 'INSTITUCION')."
+              normalized_name:
+                type: string
+                description: Nombre estandarizado para la entidad.
+              evidence:
+                type: string
+                nullable: true
+                description: Fragmento de texto donde se encontró la entidad.
+          Item:
+            type: object
+            description: Un artículo o acuerdo específico dentro de una Sección.
+            required:
+            - id
+            - type
+            - title
+            - page_range
+            properties:
+              id:
+                type: integer
+                description: ID del ítem.
+              type:
+                type: string
+                description: Tipo de contenido del ítem.
+              title:
+                type: string
+                description: "Título del ítem (e.g., 'Acuerdo', 'Decreto')."
+              issuing_entity:
+                type: string
+                nullable: true
+                description: Entidad que emite el ítem.
+              page_range:
+                type: array
+                description: "[Página inicial, Página final] del ítem."
+                items:
+                  type: integer
+                minItems: 2
+                maxItems: 2
+              raw_text:
+                type: string
+                nullable: true
+                description: Texto sin procesar del ítem.
+              summary:
+                type: string
+                nullable: true
+                description: Resumen del ítem generado (LLM).
+              entities:
+                type: array
+                description: Lista de entidades nombradas extraídas.
+                items:
+                  $ref: "#/components/schemas/Entity"
+          Section:
+            type: object
+            description: "Una sección organizativa dentro de la publicación (e.g., 'SECRETARÍA DE HACIENDA Y CRÉDITO PÚBLICO')."
+            required:
+            - id
+            - name
+            - sequence
+            - page_range
+            - items
+            properties:
+              id:
+                type: integer
+                description: ID de la sección.
+              name:
+                type: string
+                description: Nombre oficial de la sección.
+              sequence:
+                type: integer
+                description: Orden secuencial de la sección.
+              page_range:
+                type: array
+                description: "[Página inicial, Página final] de la sección."
+                items:
+                  type: integer
+                minItems: 2
+                maxItems: 2
+              items:
+                type: array
+                description: Artículos o acuerdos contenidos en la sección.
+                items:
+                  $ref: "#/components/schemas/Item"
+          PublicationPage:
+            type: object
+            description: Detalle del contenido y la imagen de una página específica del archivo.
+            required:
+            - page_no
+            properties:
+              page_no:
+                type: integer
+                description: Número de página.
+              text:
+                type: string
+                nullable: true
+                description: Contenido de texto (OCR) de la página.
+              image_uri:
+                type: string
+                nullable: true
+                description: URI de la imagen renderizada de la página.
+    inline_response_200_1_pages:
+      required:
+      - image_uri
+      - page_no
+      - text
+      type: object
+      properties:
+        page_no:
+          type: integer
+          example: 1
+        text:
+          type: string
+          example: Texto extraído de la primera página...
+        image_uri:
+          type: string
+          example: https://s3.amazonaws.com/dof-storage/2025-11-06/page1.png
+    Publications_Entity_properties:
+      required:
+      - name
+      - normalized_name
+      - type
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        name:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        type:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        normalized_name:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        evidence:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_evidence"
+    Publications_Entity:
+      required:
+      - description
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        required:
+          type: array
+          items:
+            type: string
+        properties:
+          $ref: "#/components/schemas/Publications_Entity_properties"
+    Publications_Item_properties_entities:
+      required:
+      - description
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        items:
+          $ref: "#/components/schemas/dofpublications_Item_properties_entities_items"
+    Publications_Item_properties:
+      required:
+      - entities
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        type:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        title:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_id"
+        issuing_entity:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_evidence"
+        page_range:
+          $ref: "#/components/schemas/dofpublications_Item_properties_page_range"
+        raw_text:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_evidence"
+        summary:
+          $ref: "#/components/schemas/dofpublications_Entity_properties_evidence"
+        entities:
+          $ref: "#/components/schemas/Publications_Item_properties_entities"
+    Publications_Item:
+      required:
+      - description
+      - properties
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+        description:
+          type: string
+        required:
+          type: array
+          items:
+            type: string
+        properties:
+          $ref: "#/components/schemas/Publications_Item_properties"
