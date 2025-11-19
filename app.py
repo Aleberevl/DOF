@@ -156,7 +156,7 @@ def get_file_detail(file_id):
         conn.close()
 
 # ----------------------------------------------------------------------
-# 2) GET /dof/files/{file_id} -> detalle de archivo + páginas + resumen
+# 3) Descarga archivo PDF
 # ----------------------------------------------------------------------
 
 @app.route("/download/<int:pub_id>")
